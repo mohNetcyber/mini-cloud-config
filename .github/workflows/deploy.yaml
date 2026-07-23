@@ -5,9 +5,35 @@ on:
     branches: [main]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      k3s: ${{ steps.filter.outputs.k3s }}
+      prometheus: ${{ steps.filter.outputs.prometheus }}
+      grafana: ${{ steps.filter.outputs.grafana }}
+      wazuh: ${{ steps.filter.outputs.wazuh }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detecter les fichiers modifies
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            k3s:
+              - 'k3s/**'
+            prometheus:
+              - 'prometheus/**'
+            grafana:
+              - 'grafana/**'
+            wazuh:
+              - 'wazuh/**'
+
   deploy-k3s:
     runs-on: self-hosted
-    if: contains(github.event.head_commit.modified, 'k3s/')
+    needs: changes
+    if: needs.changes.outputs.k3s == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Appliquer les manifests K3s
@@ -18,7 +44,8 @@ jobs:
 
   deploy-prometheus:
     runs-on: self-hosted
-    if: contains(github.event.head_commit.modified, 'prometheus/')
+    needs: changes
+    if: needs.changes.outputs.prometheus == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Charger la clé SSH
@@ -37,7 +64,8 @@ jobs:
 
   deploy-grafana:
     runs-on: self-hosted
-    if: contains(github.event.head_commit.modified, 'grafana/')
+    needs: changes
+    if: needs.changes.outputs.grafana == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Charger la clé SSH
@@ -56,7 +84,8 @@ jobs:
 
   deploy-wazuh:
     runs-on: self-hosted
-    if: contains(github.event.head_commit.modified, 'wazuh/')
+    needs: changes
+    if: needs.changes.outputs.wazuh == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Charger la clé SSH
