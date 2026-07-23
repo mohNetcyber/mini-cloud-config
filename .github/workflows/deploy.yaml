@@ -1,0 +1,78 @@
+name: Deploy Config Files
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-k3s:
+    runs-on: self-hosted
+    if: contains(github.event.head_commit.modified, 'k3s/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Appliquer les manifests K3s
+        run: |
+          kubectl apply -f k3s/manifests/deployment.yaml
+          kubectl apply -f k3s/manifests/service.yaml
+          kubectl rollout status deployment/mini-cloud-app --timeout=60s
+
+  deploy-prometheus:
+    runs-on: self-hosted
+    if: contains(github.event.head_commit.modified, 'prometheus/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Charger la clé SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 192.168.100.12 >> ~/.ssh/known_hosts
+      - name: Copier la config vers VM3
+        run: |
+          scp -i ~/.ssh/deploy_key prometheus/prometheus.yml <user>@192.168.100.12:/etc/prometheus/prometheus.yml
+          scp -i ~/.ssh/deploy_key prometheus/alert.rules.yml <user>@192.168.100.12:/etc/prometheus/alert.rules.yml
+      - name: Recharger Prometheus à chaud
+        run: |
+          ssh -i ~/.ssh/deploy_key <user>@192.168.100.12 "curl -X POST http://localhost:9090/-/reload"
+
+  deploy-grafana:
+    runs-on: self-hosted
+    if: contains(github.event.head_commit.modified, 'grafana/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Charger la clé SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 192.168.100.12 >> ~/.ssh/known_hosts
+      - name: Copier la config et les dashboards vers VM3
+        run: |
+          scp -i ~/.ssh/deploy_key -r grafana/provisioning/* <user>@192.168.100.12:/etc/grafana/provisioning/
+          scp -i ~/.ssh/deploy_key grafana/dashboards/*.json <user>@192.168.100.12:/var/lib/grafana/dashboards/ 2>/dev/null || true
+      - name: Redémarrer Grafana
+        run: |
+          ssh -i ~/.ssh/deploy_key <user>@192.168.100.12 "sudo systemctl restart grafana-server"
+
+  deploy-wazuh:
+    runs-on: self-hosted
+    if: contains(github.event.head_commit.modified, 'wazuh/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Charger la clé SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 192.168.100.13 >> ~/.ssh/known_hosts
+      - name: Copier la config vers VM4
+        run: |
+          scp -i ~/.ssh/deploy_key wazuh/ossec.conf <user>@192.168.100.13:/tmp/ossec.conf
+          scp -i ~/.ssh/deploy_key wazuh/local_rules.xml <user>@192.168.100.13:/tmp/local_rules.xml
+      - name: Appliquer et redémarrer le manager Wazuh
+        run: |
+          ssh -i ~/.ssh/deploy_key <user>@192.168.100.13 "
+            sudo cp /tmp/ossec.conf /var/ossec/etc/ossec.conf &&
+            sudo cp /tmp/local_rules.xml /var/ossec/etc/rules/local_rules.xml &&
+            sudo systemctl restart wazuh-manager
+          "
