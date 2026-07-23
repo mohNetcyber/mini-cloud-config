@@ -1,0 +1,46 @@
+name: Validate Config Files
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Valider les manifests K3s
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          ./kubeconform k3s/manifests/*.yaml
+
+      - name: Valider prometheus.yml (si présent)
+        run: |
+          if [ -f prometheus/prometheus.yml ]; then
+            curl -sSL https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz | tar xz
+            ./prometheus-2.53.0.linux-amd64/promtool check config prometheus/prometheus.yml
+          else
+            echo "prometheus.yml absent, etape ignoree (VM3 pas encore installee)"
+          fi
+
+      - name: Valider les fichiers Wazuh (si présents)
+        run: |
+          if [ -f wazuh/ossec.conf ]; then
+            sudo apt-get install -y libxml2-utils
+            xmllint --noout wazuh/ossec.conf
+          else
+            echo "ossec.conf absent, etape ignoree (VM4 pas encore installee)"
+          fi
+
+      - name: Valider les JSON Grafana (si présents)
+        run: |
+          shopt -s nullglob
+          files=(grafana/dashboards/*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "Aucun dashboard Grafana, etape ignoree"
+          else
+            for f in "${files[@]}"; do
+              python3 -m json.tool "$f" > /dev/null
+            done
+          fi
