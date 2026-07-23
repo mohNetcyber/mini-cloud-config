@@ -40,7 +40,7 @@ jobs:
         run: |
           kubectl apply -f k3s/manifests/deployement-test.yaml
           kubectl apply -f k3s/manifests/service.yaml
-          kubectl rollout status deployment/app-test --timeout=60s
+          kubectl rollout status deployment/app-test --timeout=180s
 
   deploy-prometheus:
     runs-on: self-hosted
