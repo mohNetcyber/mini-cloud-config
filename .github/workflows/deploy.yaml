@@ -29,11 +29,11 @@ jobs:
           ssh-keyscan -H 192.168.100.12 >> ~/.ssh/known_hosts
       - name: Copier la config vers VM3
         run: |
-          scp -i ~/.ssh/deploy_key prometheus/prometheus.yml <user>@192.168.100.12:/etc/prometheus/prometheus.yml
-          scp -i ~/.ssh/deploy_key prometheus/alert.rules.yml <user>@192.168.100.12:/etc/prometheus/alert.rules.yml
+          scp -i ~/.ssh/deploy_key prometheus/prometheus.yml traore-karym@192.168.100.12:/etc/prometheus/prometheus.yml
+          scp -i ~/.ssh/deploy_key prometheus/alert.rules.yml traore-karym@192.168.100.12:/etc/prometheus/alert.rules.yml
       - name: Recharger Prometheus à chaud
         run: |
-          ssh -i ~/.ssh/deploy_key <user>@192.168.100.12 "curl -X POST http://localhost:9090/-/reload"
+          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "curl -X POST http://localhost:9090/-/reload"
 
   deploy-grafana:
     runs-on: self-hosted
@@ -48,11 +48,11 @@ jobs:
           ssh-keyscan -H 192.168.100.12 >> ~/.ssh/known_hosts
       - name: Copier la config et les dashboards vers VM3
         run: |
-          scp -i ~/.ssh/deploy_key -r grafana/provisioning/* <user>@192.168.100.12:/etc/grafana/provisioning/
-          scp -i ~/.ssh/deploy_key grafana/dashboards/*.json <user>@192.168.100.12:/var/lib/grafana/dashboards/ 2>/dev/null || true
+          scp -i ~/.ssh/deploy_key -r grafana/provisioning/* traore-karym@192.168.100.12:/etc/grafana/provisioning/
+          scp -i ~/.ssh/deploy_key grafana/dashboards/*.json traore-karym@192.168.100.12:/var/lib/grafana/dashboards/ 2>/dev/null || true
       - name: Redémarrer Grafana
         run: |
-          ssh -i ~/.ssh/deploy_key <user>@192.168.100.12 "sudo systemctl restart grafana-server"
+          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "sudo systemctl restart grafana-server"
 
   deploy-wazuh:
     runs-on: self-hosted
@@ -67,11 +67,11 @@ jobs:
           ssh-keyscan -H 192.168.100.13 >> ~/.ssh/known_hosts
       - name: Copier la config vers VM4
         run: |
-          scp -i ~/.ssh/deploy_key wazuh/ossec.conf <user>@192.168.100.13:/tmp/ossec.conf
-          scp -i ~/.ssh/deploy_key wazuh/local_rules.xml <user>@192.168.100.13:/tmp/local_rules.xml
+          scp -i ~/.ssh/deploy_key wazuh/ossec.conf traore-karym@192.168.100.13:/tmp/ossec.conf
+          scp -i ~/.ssh/deploy_key wazuh/local_rules.xml traore-karym@192.168.100.13:/tmp/local_rules.xml
       - name: Appliquer et redémarrer le manager Wazuh
         run: |
-          ssh -i ~/.ssh/deploy_key <user>@192.168.100.13 "
+          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.13 "
             sudo cp /tmp/ossec.conf /var/ossec/etc/ossec.conf &&
             sudo cp /tmp/local_rules.xml /var/ossec/etc/rules/local_rules.xml &&
             sudo systemctl restart wazuh-manager
