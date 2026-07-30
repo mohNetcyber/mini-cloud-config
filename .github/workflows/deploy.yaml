@@ -38,8 +38,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Appliquer les manifests K3s
         run: |
-          kubectl apply -f k3s/manifests/deployement-test.yaml
-          kubectl apply -f k3s/manifests/service.yaml
+          kubectl apply -f k3s/manifests/
+          kubectl rollout restart deployment/app-test
           kubectl rollout status deployment/app-test --timeout=180s
 
   deploy-prometheus:
