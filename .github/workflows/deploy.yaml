@@ -78,11 +78,18 @@ jobs:
             --docker-username=${{ github.actor }} \
             --docker-password=${{ secrets.GHCR_PAT }} \
             --dry-run=client -o yaml | kubectl apply -f -
+
+      # Injection à la volée du tag unique (Pas besoin de modifier votre fichier app.yaml d'origine !)
+      - name: Injecter le tag de l'image dans le manifest
+        run: |
+          sed -i 's|image: ghcr.io/mohNetcyber/mini-cloud-config:latest|image: ghcr.io/mohNetcyber/mini-cloud-config:${{ github.sha }}|g' k3s/manifests/deployment-test.yaml
+
       - name: Appliquer les manifests K3s
         run: |
           kubectl apply -f k3s/manifests/ -R
-          kubectl rollout restart deployment/app-test
+          # Suppression du rollout restart (Kubernetes détectera le changement de tag nativement)
           kubectl rollout status deployment/app-test --timeout=180s
+
 
   deploy-prometheus:
     runs-on: self-hosted
