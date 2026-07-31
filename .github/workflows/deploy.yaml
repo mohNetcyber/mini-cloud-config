@@ -86,7 +86,7 @@ jobs:
 
       - name: Appliquer les manifests K3s
         run: |
-          kubectl apply -f k3s/manifests/ -R
+          kubectl apply -R -f k3s/manifests/
           # Suppression du rollout restart (Kubernetes détectera le changement de tag nativement)
           kubectl rollout status deployment/app-test --timeout=180s
 
