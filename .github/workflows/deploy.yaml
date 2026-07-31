@@ -12,6 +12,7 @@ jobs:
       prometheus: ${{ steps.filter.outputs.prometheus }}
       grafana: ${{ steps.filter.outputs.grafana }}
       wazuh: ${{ steps.filter.outputs.wazuh }}
+      app: ${{ steps.filter.outputs.app }} # Ajout nécessaire
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,10 +30,14 @@ jobs:
               - 'grafana/**'
             wazuh:
               - 'wazuh/**'
+            app:
+              - 'app/**' # Ajout pour fiabiliser la détection
 
   build-app-image:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'app/')
+    needs: changes
+    # Correction : Utilisation des outputs pour éviter les limites de head_commit
+    if: needs.changes.outputs.app == 'true'
     permissions:
       contents: read
       packages: write
@@ -57,11 +62,12 @@ jobs:
 
   deploy-k3s:
     runs-on: self-hosted
-    needs: build-app-image
+    # Correction : Doit dépendre à la fois de 'changes' ET de 'build-app-image'
+    needs: [changes, build-app-image]
     if: |
       always() &&
       (needs.build-app-image.result == 'success' || needs.build-app-image.result == 'skipped') &&
-      (contains(github.event.head_commit.modified, 'k3s/') || contains(github.event.head_commit.modified, 'app/'))
+      (needs.changes.outputs.k3s == 'true' || needs.changes.outputs.app == 'true')
     steps:
       - uses: actions/checkout@v4
 
@@ -72,7 +78,6 @@ jobs:
             --docker-username=${{ github.actor }} \
             --docker-password=${{ secrets.GHCR_PAT }} \
             --dry-run=client -o yaml | kubectl apply -f -
-
       - name: Appliquer les manifests K3s
         run: |
           kubectl apply -f k3s/manifests/ -R
