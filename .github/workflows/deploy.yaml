@@ -57,8 +57,8 @@ jobs:
           context: ./app
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/mini-cloud-config:${{ github.sha }}
-            ghcr.io/${{ github.repository }}/mini-cloud-config:latest
+            ghcr.io/mohnetcyber/mini-cloud-config:latest
+            ghcr.io/mohnetcyber/mini-cloud-config:${{ github.sha }}
 
   deploy-k3s:
     runs-on: self-hosted
@@ -79,10 +79,10 @@ jobs:
             --docker-password=${{ secrets.GHCR_PAT }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      # Injection à la volée du tag unique (Pas besoin de modifier votre fichier app.yaml d'origine !)
+      # Injection à la volée du tag unique
       - name: Injecter le tag de l'image dans le manifest
         run: |
-          sed -i 's|image: ghcr.io/mohNetcyber/mini-cloud-config:latest|image: ghcr.io/mohNetcyber/mini-cloud-config:${{ github.sha }}|g' k3s/manifests/deployment-test.yaml
+          sed -i 's|image: ghcr.io/mohnetcyber/mini-cloud-config:latest|image: ghcr.io/mohnetcyber/mini-cloud-config:${{ github.sha }}|g' k3s/manifests/deployment-test.yaml
 
       - name: Appliquer les manifests K3s
         run: |
