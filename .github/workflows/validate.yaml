@@ -12,25 +12,33 @@ jobs:
 
       - name: Valider les manifests K3s
         run: |
-          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
-          ./kubeconform k3s/manifests/*.yaml
+          # Téléchargement sécurisé et stable de kubeconform
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz kubeconform
+          # Correction : Ajout du drapeau -r pour parcourir récursivement les sous-dossiers
+          ./kubeconform -summary -r k3s/manifests/
 
       - name: Valider prometheus.yml (si présent)
         run: |
           if [ -f prometheus/prometheus.yml ]; then
-            curl -sSL https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz | tar xz
-            ./prometheus-2.53.0.linux-amd64/promtool check config prometheus/prometheus.yml
+            # Téléchargement uniquement de promtool pour gagner du temps
+            curl -sSL https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz | tar xz --strip-components=1 */promtool
+            ./promtool check config prometheus/prometheus.yml
           else
             echo "prometheus.yml absent, etape ignoree (VM3 pas encore installee)"
           fi
 
       - name: Valider les fichiers Wazuh (si présents)
         run: |
-          if [ -f wazuh/ossec.conf ]; then
-            sudo apt-get install -y libxml2-utils
-            xmllint --noout wazuh/ossec.conf
+          # Correction : Vérification et validation de TOUS les fichiers XML présents
+          shopt -s nullglob
+          xml_files=(wazuh/*.conf wazuh/*.xml)
+          if [ ${#xml_files[@]} -gt 0 ]; then
+            sudo apt-get update && sudo apt-get install -y libxml2-utils
+            for f in "${xml_files[@]}"; do
+              xmllint --noout "$f"
+            done
           else
-            echo "ossec.conf absent, etape ignoree (VM4 pas encore installee)"
+            echo "Fichiers Wazuh absents, etape ignoree (VM4 pas encore installee)"
           fi
 
       - name: Valider les JSON Grafana (si présents)
@@ -40,7 +48,8 @@ jobs:
           if [ ${#files[@]} -eq 0 ]; then
             echo "Aucun dashboard Grafana, etape ignoree"
           else
+            # Correction : Utilisation de jq pour une validation stricte qui lève une erreur
             for f in "${files[@]}"; do
-              python3 -m json.tool "$f" > /dev/null
+              jq empty "$f"
             done
           fi
