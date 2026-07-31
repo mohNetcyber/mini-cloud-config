@@ -30,29 +30,54 @@ jobs:
             wazuh:
               - 'wazuh/**'
 
-    deploy-k3s:
-      runs-on: self-hosted
-      needs: build-app-image
-      if: |
-        always() &&
-        (needs.build-app-image.result == 'success' || needs.build-app-image.result == 'skipped') &&
-        (contains(github.event.head_commit.modified, 'k3s/') || contains(github.event.head_commit.modified, 'app/'))
-      steps:
-        - uses: actions/checkout@v4
+  build-app-image:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.modified, 'app/')
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Creer/mettre a jour le secret de pull GHCR
-          run: |
-            kubectl create secret docker-registry ghcr-pull-secret \
-              --docker-server=ghcr.io \
-              --docker-username=${{ github.actor }} \
-              --docker-password=${{ secrets.GHCR_PAT }} \
-              --dry-run=client -o yaml | kubectl apply -f -
+      - name: Connexion a GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-        - name: Appliquer les manifests K3s
-          run: |
-            kubectl apply -f k3s/manifests/ -R
-            kubectl rollout restart deployment/app-test
-            kubectl rollout status deployment/app-test --timeout=180s
+      - name: Build et push de l'image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/mini-cloud-config:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/mini-cloud-config:latest
+
+  deploy-k3s:
+    runs-on: self-hosted
+    needs: build-app-image
+    if: |
+      always() &&
+      (needs.build-app-image.result == 'success' || needs.build-app-image.result == 'skipped') &&
+      (contains(github.event.head_commit.modified, 'k3s/') || contains(github.event.head_commit.modified, 'app/'))
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Creer/mettre a jour le secret de pull GHCR
+        run: |
+          kubectl create secret docker-registry ghcr-pull-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GHCR_PAT }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Appliquer les manifests K3s
+        run: |
+          kubectl apply -f k3s/manifests/ -R
+          kubectl rollout restart deployment/app-test
+          kubectl rollout status deployment/app-test --timeout=180s
 
   deploy-prometheus:
     runs-on: self-hosted
@@ -126,28 +151,3 @@ jobs:
       - name: Nettoyer la clé SSH
         if: always()
         run: rm -f ~/.ssh/deploy_key
-
-    build-app-image:
-    runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'app/')
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Connexion a GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build et push de l'image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./app
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/mini-cloud-config:${{ github.sha }}
-            ghcr.io/${{ github.repository }}/mini-cloud-config:latest
