@@ -78,7 +78,7 @@ jobs:
         run: |
           kubectl create secret docker-registry ghcr-pull-secret \
             --docker-server=ghcr.io \
-            --docker-username=${{ github.actor }} \
+            --docker-username=${{ github.repository_owner }} \
             --docker-password=${{ secrets.GHCR_PAT }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
