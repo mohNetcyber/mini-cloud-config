@@ -58,8 +58,8 @@ jobs:
           context: ./app
           push: true
           tags: |
-            ghcr.io/mohnetcyber/mini-cloud-config:latest
-            ghcr.io/mohnetcyber/mini-cloud-config:${{ github.sha }}
+            ghcr.io/mohNetcyber/mini-cloud-config:latest
+            ghcr.io/mohNetcyber/mini-cloud-config:${{ github.sha }}
       - name: Publier le tag de l'image
         id: meta
         run: echo "image_tag=${{ github.sha }}" >> "$GITHUB_OUTPUT"
@@ -86,7 +86,7 @@ jobs:
         run: |
           kubectl apply -R -f k3s/manifests/
           if [ -n "${{ needs.build-app-image.outputs.image_tag }}" ]; then
-            kubectl set image deployment/app-test app-test=ghcr.io/mohnetcyber/mini-cloud-config:${{ needs.build-app-image.outputs.image_tag }}
+            kubectl set image deployment/app-test app-test=ghcr.io/mohNetcyber/mini-cloud-config:${{ needs.build-app-image.outputs.image_tag }}
           fi
           kubectl rollout status deployment/app-test --timeout=180s
 
