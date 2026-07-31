@@ -18,7 +18,7 @@ spec:
         - name: ghcr-pull-secret
       containers:
         - name: app-test
-          image: ghcr.io/mohNetcyber/mini-cloud-config:latest
+          image: ghcr.io/mohnetcyber/mini-cloud-config:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
