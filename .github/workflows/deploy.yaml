@@ -36,8 +36,9 @@ jobs:
   build-app-image:
     runs-on: ubuntu-latest
     needs: changes
-    # Correction : Utilisation des outputs pour éviter les limites de head_commit
     if: needs.changes.outputs.app == 'true'
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
     permissions:
       contents: read
       packages: write
@@ -59,10 +60,12 @@ jobs:
           tags: |
             ghcr.io/mohnetcyber/mini-cloud-config:latest
             ghcr.io/mohnetcyber/mini-cloud-config:${{ github.sha }}
+      - name: Publier le tag de l'image
+        id: meta
+        run: echo "image_tag=${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
   deploy-k3s:
     runs-on: self-hosted
-    # Correction : Doit dépendre à la fois de 'changes' ET de 'build-app-image'
     needs: [changes, build-app-image]
     if: |
       always() &&
@@ -82,8 +85,8 @@ jobs:
       - name: Appliquer les manifests K3s
         run: |
           kubectl apply -R -f k3s/manifests/
-          if [ "${{ needs.changes.outputs.app }}" = "true" ]; then
-            kubectl set image deployment/app-test app-test=ghcr.io/mohnetcyber/mini-cloud-config:${{ github.sha }}
+          if [ -n "${{ needs.build-app-image.outputs.image_tag }}" ]; then
+            kubectl set image deployment/app-test app-test=ghcr.io/mohnetcyber/mini-cloud-config:${{ needs.build-app-image.outputs.image_tag }}
           fi
           kubectl rollout status deployment/app-test --timeout=180s
 
