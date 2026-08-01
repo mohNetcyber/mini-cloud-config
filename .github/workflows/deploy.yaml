@@ -126,13 +126,23 @@ jobs:
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 192.168.100.12 >> ~/.ssh/known_hosts
-      - name: Copier la config et les dashboards vers VM3
+
+      - name: Copier la config vers un dossier temporaire sur VM3
         run: |
-          scp -i ~/.ssh/deploy_key -r grafana/provisioning/* traore-karym@192.168.100.12:/etc/grafana/provisioning/
-          scp -i ~/.ssh/deploy_key grafana/dashboards/*.json traore-karym@192.168.100.12:/var/lib/grafana/dashboards/ 2>/dev/null || true
-      - name: Redémarrer Grafana
+          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "mkdir -p /tmp/grafana-deploy/provisioning /tmp/grafana-deploy/dashboards"
+          scp -i ~/.ssh/deploy_key -r grafana/provisioning/* traore-karym@192.168.100.12:/tmp/grafana-deploy/provisioning/
+          scp -i ~/.ssh/deploy_key grafana/dashboards/*.json traore-karym@192.168.100.12:/tmp/grafana-deploy/dashboards/ 2>/dev/null || true
+
+      - name: Déplacer les fichiers avec les bons droits et redémarrer Grafana
         run: |
-          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "sudo systemctl restart grafana-server"
+          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "
+            sudo cp -r /tmp/grafana-deploy/provisioning/* /etc/grafana/provisioning/ &&
+            sudo cp /tmp/grafana-deploy/dashboards/*.json /var/lib/grafana/dashboards/ 2>/dev/null || true &&
+            sudo chown -R grafana:grafana /etc/grafana/provisioning /var/lib/grafana/dashboards &&
+            sudo systemctl restart grafana-server &&
+            rm -rf /tmp/grafana-deploy
+          "
+
       - name: Nettoyer la clé SSH
         if: always()
         run: rm -f ~/.ssh/deploy_key
