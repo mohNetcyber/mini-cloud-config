@@ -126,20 +126,10 @@ jobs:
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 192.168.100.12 >> ~/.ssh/known_hosts
-      - name: Copier la config et les dashboards via /tmp
+      - name: Copier la config et les dashboards vers VM3
         run: |
-          # 1. Nettoyer et recréer les répertoires temporaires sur la machine distante
-          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "rm -rf /tmp/grafana_prov && mkdir -p /tmp/grafana_prov /tmp/grafana_dash"
-          
-          # 2. Copier les fichiers du dépôt Git vers le dossier /tmp de la VM3
-          scp -i ~/.ssh/deploy_key -r grafana/provisioning/* traore-karym@192.168.100.12:/tmp/grafana_prov/
-          scp -i ~/.ssh/deploy_key grafana/dashboards/*.json traore-karym@192.168.100.12:/tmp/grafana_dash/ 2>/dev/null || true
-          
-          # 3. Déplacer les fichiers avec sudo vers les répertoires applicatifs
-          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "
-            sudo cp -r /tmp/grafana_prov/* /etc/grafana/provisioning/ &&
-            if [ \$(ls -A /tmp/grafana_dash/) ]; then sudo cp /tmp/grafana_dash/*.json /var/lib/grafana/dashboards/; fi
-          "
+          scp -i ~/.ssh/deploy_key -r grafana/provisioning/* traore-karym@192.168.100.12:/etc/grafana/provisioning/
+          scp -i ~/.ssh/deploy_key grafana/dashboards/*.json traore-karym@192.168.100.12:/var/lib/grafana/dashboards/ 2>/dev/null || true
       - name: Redémarrer Grafana
         run: |
           ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "sudo systemctl restart grafana-server"
