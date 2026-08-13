@@ -1,0 +1,41 @@
+<!--
+  ossec-agent-fim-snippet.xml
+  ============================================================================
+  Bloc de configuration FIM (File Integrity Monitoring) à insérer dans
+  /var/ossec/etc/ossec.conf, sur CHAQUE agent (VM1, VM2, VM5).
+
+  Ce bloc remplace la section <syscheck>...</syscheck> déjà présente par
+  défaut dans le fichier (ne pas dupliquer la balise <syscheck>, seulement
+  adapter son contenu avec les lignes ci-dessous).
+
+  Fichiers surveillés (voir guide, section 4.4) :
+    - /etc/passwd          : modification de comptes utilisateurs
+    - /etc/ssh/sshd_config : modification de la configuration SSH
+
+  Après modification :
+    sudo systemctl restart wazuh-agent
+  ============================================================================
+-->
+<syscheck>
+  <disabled>no</disabled>
+
+  <!-- Fréquence de vérification complète (en secondes) : toutes les 12h -->
+  <frequency>43200</frequency>
+
+  <!-- Fichiers sensibles surveillés en temps réel -->
+  <directories check_all="yes" realtime="yes">/etc/passwd</directories>
+  <directories check_all="yes" realtime="yes">/etc/ssh/sshd_config</directories>
+
+  <!-- Répertoires système standards (surveillance périodique, non temps réel) -->
+  <directories check_all="yes">/etc,/usr/bin,/usr/sbin</directories>
+  <directories check_all="yes">/bin,/sbin,/boot</directories>
+
+  <!-- Ignorer les fichiers à forte volatilité pour limiter le bruit -->
+  <ignore>/etc/mtab</ignore>
+  <ignore>/etc/hosts.deny</ignore>
+  <ignore>/etc/mail/statistics</ignore>
+  <ignore>/etc/random-seed</ignore>
+  <ignore>/etc/adjtime</ignore>
+  <ignore type="sregex">.log$|.swp$</ignore>
+
+</syscheck>

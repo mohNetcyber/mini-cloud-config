@@ -1,0 +1,53 @@
+<!--
+  local_rules_additions.xml
+  ============================================================================
+  Règles de détection personnalisées - Wazuh Manager (VM4 - 192.168.100.13)
+
+  A COPIER dans le contenu de : /var/ossec/etc/rules/local_rules.xml
+  (ne pas remplacer le fichier existant - fusionner ce bloc à l'intérieur
+  des balises <group>...</group> déjà présentes, ou l'ajouter tel quel si
+  le fichier est encore vide de règles personnalisées)
+
+  Après modification :
+    sudo systemctl restart wazuh-manager
+  ============================================================================
+-->
+<group name="local,syslog,sshd,">
+
+  <!--
+    Rappel : les règles de base 5710 et 5712 (déjà incluses dans Wazuh)
+    détectent déjà les tentatives de connexion SSH invalides/échouées.
+    La règle ci-dessous les complète en ajoutant une alerte de niveau
+    plus élevé en cas de tentatives RÉPÉTÉES (comportement de type
+    brute-force), utile pour le scénario de test 5.4 du guide.
+  -->
+  <rule id="100010" level="10" frequency="6" timeframe="120">
+    <if_matched_sid>5710</if_matched_sid>
+    <description>Tentatives de connexion SSH échouées répétées (possible brute-force) - 6 échecs en 2 minutes</description>
+    <group>authentication_failures,pci_dss_11.4,gpg13_4.12,gdpr_IV_11.4,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AC.7,tsc_CC6.1,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+
+  <!--
+    Alerte spécifique sur la modification du fichier de configuration SSH,
+    surveillé via le module syscheck (FIM) - correspond au scénario de
+    test 5.5 du guide (modification d'un fichier sensible).
+  -->
+  <rule id="100020" level="12" >
+    <if_sid>550</if_sid>
+    <field name="file">/etc/ssh/sshd_config</field>
+    <description>ALERTE CRITIQUE : modification détectée sur /etc/ssh/sshd_config</description>
+    <group>syscheck,pci_dss_11.5,gpg13_4.11,gdpr_II_5.1.f,hipaa_164.312.c.1,hipaa_164.312.c.2,nist_800_53_SI.7,tsc_CC6.1,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+
+  <!--
+    Alerte spécifique sur la modification de /etc/passwd - fichier système
+    critique, également couvert par le scénario 5.5.
+  -->
+  <rule id="100021" level="12" >
+    <if_sid>550</if_sid>
+    <field name="file">/etc/passwd</field>
+    <description>ALERTE CRITIQUE : modification détectée sur /etc/passwd</description>
+    <group>syscheck,pci_dss_11.5,gpg13_4.11,gdpr_II_5.1.f,hipaa_164.312.c.1,hipaa_164.312.c.2,nist_800_53_SI.7,tsc_CC6.1,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+
+</group>
