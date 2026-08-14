@@ -29,6 +29,8 @@
     <description>Bruteforce SSH probable - plus de 6 echecs en 2 minutes</description>
     <group>authentication_failures,</group>
   </rule>
+
+  
   <!-- Alertes FIM : modifications fichiers sensibles -->
   <rule id="100020" level="12">
     <if_sid>550</if_sid>
@@ -43,5 +45,5 @@
     <description>ALERTE CRITIQUE : modification detectee sur /etc/passwd</description>
     <group>syscheck,pci_dss_11.5,gpg13_4.11,gdpr_II_5.1.f,hipaa_164.312.c.1,hipaa_164.312.c.2,nist_800_53_SI.7,tsc_CC6.1,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
   </rule>
-  
+
 </group>
