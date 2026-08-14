@@ -3,6 +3,12 @@ name: Validate Config Files
 on:
   push:
     branches: [main]
+    paths:
+      - 'k3s/**'
+      - 'prometheus/**'
+      - 'wazuh/**'
+      - 'grafana/**'
+      - '.github/workflows/validate.yaml'
 
 jobs:
   validate:
