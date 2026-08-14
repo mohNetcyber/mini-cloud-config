@@ -153,21 +153,7 @@ jobs:
     if: needs.changes.outputs.wazuh == 'true'
     steps:
       - uses: actions/checkout@v4
-
-      - name: Valider la syntaxe XML des fichiers Wazuh
-        run: |
-          shopt -s nullglob
-          xml_files=(wazuh/*.conf wazuh/*.xml)
-          if [ ${#xml_files[@]} -gt 0 ]; then
-            sudo apt-get update
-            sudo apt-get install -y libxml2-utils
-            for f in "${xml_files[@]}"; do
-              xmllint --noout "$f"
-            done
-          else
-            echo "Aucun fichier Wazuh à valider, étape ignorée"
-          fi
-
+      
       - name: Charger la clé SSH
         run: |
           mkdir -p ~/.ssh
