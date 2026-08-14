@@ -30,13 +30,30 @@ jobs:
         run: |
           shopt -s nullglob
           xml_files=(wazuh/*.conf wazuh/*.xml)
+
           if [ ${#xml_files[@]} -gt 0 ]; then
-            sudo apt-get update && sudo apt-get install -y libxml2-utils
+            sudo apt-get update
+            sudo apt-get install -y libxml2-utils
+
             for f in "${xml_files[@]}"; do
-              xmllint --noout "$f"
+              echo "Validation de $f"
+
+              if [[ "$f" == *.conf ]]; then
+                # Wazuh peut utiliser plusieurs blocs <ossec_config>.
+                # On les encapsule temporairement dans une racine XML unique.
+                {
+                  echo '<wazuh_config>'
+                  cat "$f"
+                  echo '</wazuh_config>'
+                } > /tmp/wazuh-validation.xml
+
+                xmllint --noout /tmp/wazuh-validation.xml
+              else
+                xmllint --noout "$f"
+              fi
             done
           else
-            echo "Fichiers Wazuh absents, etape ignoree (VM4 pas encore installee)"
+            echo "Fichiers Wazuh absents, étape ignorée (VM4 pas encore installée)"
           fi
 
       - name: Valider les JSON Grafana (si présents)
