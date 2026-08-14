@@ -176,11 +176,13 @@ jobs:
           ssh-keyscan -H 192.168.100.13 >> ~/.ssh/known_hosts
       - name: Copier la config vers VM4
         run: |
+          scp -i ~/.ssh/deploy_key wazuh/ossec.conf traore-karym@192.168.100.13:/tmp/ossec.conf
           scp -i ~/.ssh/deploy_key wazuh/agent.conf traore-karym@192.168.100.13:/tmp/agent.conf
           scp -i ~/.ssh/deploy_key wazuh/local_rules.xml traore-karym@192.168.100.13:/tmp/local_rules.xml
       - name: Appliquer et redémarrer le manager Wazuh
         run: |
           ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.13 "
+            sudo cp /tmp/ossec.conf /var/ossec/etc/ossec.conf &&
             sudo cp /tmp/agent.conf /var/ossec/etc/shared/default/agent.conf &&
             sudo cp /tmp/local_rules.xml /var/ossec/etc/rules/local_rules.xml &&
             sudo rm -f /tmp/agent.conf /tmp/local_rules.xml &&
