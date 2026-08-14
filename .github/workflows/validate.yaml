@@ -19,13 +19,14 @@ jobs:
       - name: Valider prometheus.yml (si présent)
         run: |
           if [ -f prometheus/prometheus.yml ]; then
-            curl -sSL https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz | tar xz
-            ./prometheus-2.53.0.linux-amd64/promtool check config prometheus/prometheus.yml
+            curl -sSL https://github.com/prometheus/prometheus/releases/latest/download/prometheus-linux-amd64.tar.gz | tar xz
+            ./prometheus-linux-amd64/promtool check config prometheus/prometheus.yml
           else
             echo "prometheus.yml absent, etape ignoree (VM3 pas encore installee)"
           fi
 
       - name: Valider les fichiers Wazuh (si présents)
+        shell: bash
         run: |
           shopt -s nullglob
           xml_files=(wazuh/*.conf wazuh/*.xml)
@@ -39,6 +40,7 @@ jobs:
           fi
 
       - name: Valider les JSON Grafana (si présents)
+        shell: bash
         run: |
           shopt -s nullglob
           files=(grafana/dashboards/*.json)
