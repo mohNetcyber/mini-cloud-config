@@ -57,8 +57,9 @@
 
   <rule id="100103" level="10">
     <if_sid>100101</if_sid>
-    <field name="objectRef.resource">pods/exec</field>
-    <description>Ouverture d'un shell interactif dans un pod (kubectl exec)</description>
+    <field name="objectRef.resource">pods</field>
+    <field name="objectRef.subresource">exec</field>
+    <description>Execution de commandes dans un pod via l'API Kubernetes</description>
     <group>k3s_audit,</group>
   </rule>
 </group>
