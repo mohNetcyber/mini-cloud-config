@@ -50,7 +50,7 @@
   <rule id="100102" level="12">
     <if_sid>100101</if_sid>
     <field name="objectRef.resource">secrets</field>
-    <field name="verb">^(create|update|delete)$</field>
+    <field name="verb" type="pcre2">^(create|update|delete)$</field>
     <description>Modification d'un Secret Kubernetes via l'API</description>
     <group>k3s_audit,</group>
   </rule>
