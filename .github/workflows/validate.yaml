@@ -44,8 +44,8 @@ jobs:
             for f in "${xml_files[@]}"; do
               echo "Validation de $f"
 
-              if [[ "$f" == *.conf ]]; then
-                # Wazuh peut utiliser plusieurs blocs <ossec_config>.
+              if [[ "$f" == *.conf || "$f" == *local_rules.xml ]]; then
+                # Wazuh peut utiliser plusieurs blocs <ossec_config> ou plusieurs <group>.
                 # On les encapsule temporairement dans une racine XML unique.
                 {
                   echo '<wazuh_config>'
