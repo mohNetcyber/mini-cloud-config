@@ -226,19 +226,19 @@ HOME_TEMPLATE = """
 
         <section class="grid">
             <article class="card">
-                <h2>Disponibilité</h2>
-                <strong>99.9%</strong>
-                <p>Les probes de santé vérifient le bon fonctionnement du service.</p>
+                <h2>Route</h2>
+                <strong>/health</strong>
+                <p>Ce point de contrôle est utilisé par les probes Kubernetes pour vérifier l’état du service.</p>
             </article>
             <article class="card">
-                <h2>Trafic</h2>
-                <strong>OK</strong>
-                <p>Le compteur HTTP est collecté automatiquement pour Grafana et Prometheus.</p>
+                <h2>Métriques</h2>
+                <strong>/metrics</strong>
+                <p>L’application expose des métriques Prometheus via la bibliothèque python prometheus_client.</p>
             </article>
             <article class="card">
                 <h2>Supervision</h2>
-                <strong>Actif</strong>
-                <p>Les alertes sur les erreurs 5xx et la disponibilité sont prêtes à l’emploi.</p>
+                <strong>Grafana + Prometheus</strong>
+                <p>Le dépôt contient un datasource Prometheus et un dashboard Grafana pour exploiter ces métriques.</p>
             </article>
         </section>
 
@@ -249,7 +249,7 @@ HOME_TEMPLATE = """
         </div>
 
         <div class="footer-note">
-            Mini-cloud K3s • application Flask • monitoring Prometheus / Grafana
+            Mini-cloud K3s • Flask • observabilité Prometheus / Grafana • données issues du dépôt et des manifests
         </div>
     </main>
 </body>
