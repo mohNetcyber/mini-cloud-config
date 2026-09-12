@@ -6,13 +6,14 @@
 
 <group name="local,syslog,sshd,">
 
+  <!-- Règle 100001 : Se déclenche à CHAQUE échec SSH (remplacement de if_matched_sid par if_sid) -->
   <rule id="100001" level="10">
-    <if_matched_sid>5760</if_matched_sid>
-    <same_source_ip />
-    <description>Tentatives de connexion SSH echouees repetees (mini-cloud)</description>
+    <if_sid>5760, 5710</if_sid>
+    <description>Tentative de connexion SSH echouee (mini-cloud)</description>
     <group>authentication_failures,</group>
   </rule>
 
+  <!-- Règle 100002 : Compte la répétition de la règle 100001 -->
   <rule id="100002" level="12" frequency="6" timeframe="120">
     <if_matched_sid>100001</if_matched_sid>
     <same_source_ip />
@@ -20,8 +21,7 @@
     <group>authentication_failures,</group>
   </rule>
 
-  
-  <!-- Alertes FIM : modifications fichiers sensibles -->
+  <!-- Alertes FIM : modifications fichiers sensibles (Celles-ci sont correctes) -->
   <rule id="100020" level="12">
     <if_sid>550</if_sid>
     <field name="file">/etc/ssh/sshd_config</field>
@@ -37,6 +37,7 @@
   </rule>
 
 </group>
+
 
 
 <group name="k3s_audit,">
