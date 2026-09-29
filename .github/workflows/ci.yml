@@ -7,9 +7,6 @@ on:
       - 'app/**'
       - '.github/workflows/ci.yml'
 
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}/mini-cloud-app
-
 jobs:
   build-scan-push:
     runs-on: ubuntu-latest
@@ -18,9 +15,15 @@ jobs:
       packages: write
     outputs:
       image_tag: ${{ steps.image.outputs.image_tag }}
+      image_name: ${{ steps.image-name.outputs.image_name }}
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
+
+      - name: Normaliser le nom de l'image GHCR
+        id: image-name
+        shell: bash
+        run: echo "image_name=ghcr.io/${GITHUB_REPOSITORY,,}/mini-cloud-app" >> "$GITHUB_OUTPUT"
 
       - name: Build de l'image pour le scan
         uses: docker/build-push-action@v5
@@ -51,8 +54,8 @@ jobs:
           context: ./app
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.IMAGE_NAME }}:latest
+            ${{ steps.image-name.outputs.image_name }}:${{ github.sha }}
+            ${{ steps.image-name.outputs.image_name }}:latest
 
       - name: Publier le tag de l'image
         id: image
@@ -77,5 +80,5 @@ jobs:
         run: |
           kubectl apply -f k3s/manifests/deployment-test.yaml
           kubectl set image deployment/app-test \
-            app-test=${{ env.IMAGE_NAME }}:${{ needs.build-scan-push.outputs.image_tag }}
+            app-test=${{ needs.build-scan-push.outputs.image_name }}:${{ needs.build-scan-push.outputs.image_tag }}
           kubectl rollout status deployment/app-test --timeout=180s
