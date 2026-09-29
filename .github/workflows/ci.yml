@@ -26,7 +26,7 @@ jobs:
         run: echo "image_name=ghcr.io/${GITHUB_REPOSITORY,,}/mini-cloud-app" >> "$GITHUB_OUTPUT"
 
       - name: Build de l'image pour le scan
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./app
           push: false
@@ -49,7 +49,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push de l'image apres le scan
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./app
           push: true
