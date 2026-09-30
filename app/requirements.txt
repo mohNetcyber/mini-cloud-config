@@ -1,2 +1,2 @@
 flask==3.0.3
-prometheus-client==0.20.0
+prometheus-client==0.26.0
