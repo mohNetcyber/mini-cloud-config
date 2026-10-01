@@ -1,10 +1,13 @@
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
-RUN useradd --create-home --shell /bin/false appuser
+RUN apt-get update \
+	&& apt-get upgrade -y \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& useradd --create-home --shell /bin/false appuser
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
 
