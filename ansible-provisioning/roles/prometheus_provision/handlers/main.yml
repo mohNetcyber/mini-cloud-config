@@ -1,0 +1,6 @@
+- name: Redemarrer et activer Prometheus
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: prometheus
+    enabled: yes
+    state: restarted

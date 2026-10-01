@@ -63,6 +63,8 @@ jobs:
 
   deploy-k3s:
     runs-on: self-hosted
+    env:
+      KUBECONFIG: /home/traore-karym/actions-runner/deployer-kubeconfig.yaml
     needs: build-scan-push
     steps:
       - name: Checkout du code

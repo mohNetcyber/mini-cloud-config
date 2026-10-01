@@ -1,0 +1,5 @@
+- hosts: k3s_worker
+  become: yes
+  roles:
+    - common
+    - k3s_worker

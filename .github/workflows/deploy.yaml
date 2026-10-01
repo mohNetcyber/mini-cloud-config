@@ -31,6 +31,8 @@ jobs:
               - 'wazuh/**'
   deploy-k3s:
     runs-on: self-hosted
+    env:
+      KUBECONFIG: /home/traore-karym/actions-runner/deployer-kubeconfig.yaml
     needs: changes
     if: needs.changes.outputs.k3s == 'true'
     steps:

@@ -1,0 +1,4 @@
+.ansible/
+.ansible-secrets/
+*.vault_pass*
+vault_pass.txt

@@ -1,0 +1,26 @@
+- name: Installer K3s server
+  ansible.builtin.shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL=stable sh -s - server \
+      --node-ip=192.168.100.10 \
+      --tls-san=192.168.100.10 \
+      --tls-san=vm1-k3s-server \
+      --write-kubeconfig-mode=644 \
+      --disable=traefik \
+      --node-name=vm1-k3s-server
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Attendre que l'API K3s reponde
+  ansible.builtin.wait_for:
+    port: 6443
+    timeout: 60
+
+- name: Appliquer le taint sur le control-plane
+  kubernetes.core.k8s_taint:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    name: vm1-k3s-server
+    state: present
+    taints:
+      - key: "node-role.kubernetes.io/control-plane"
+        value: "NoSchedule"
+        effect: "NoSchedule"

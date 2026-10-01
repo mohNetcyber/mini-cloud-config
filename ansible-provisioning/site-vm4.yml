@@ -1,0 +1,38 @@
+# Etape 1 : manager installe et configure en premier
+- hosts: security
+  become: yes
+  roles:
+    - common
+    - wazuh_manager_provision
+
+# Etape 2 : agents installes une fois le manager pret a les recevoir
+- hosts: k3s_server
+  become: yes
+  roles:
+    - wazuh_agent_provision
+
+# Etape 3 : assignation du groupe k3s-server, possible seulement
+# maintenant que l'agent VM1 est enregistre et a un ID connu
+- hosts: security
+  become: yes
+  tasks:
+    - name: Lire les groupes de VM1
+      ansible.builtin.command:
+        argv:
+          - /var/ossec/bin/agent_groups
+          - -s
+          - -i
+          - "{{ hostvars['vm1']['agent_id'] }}"
+          - -q
+      delegate_to: vm4
+      register: vm1_groups
+      changed_when: false
+      when: hostvars['vm1']['agent_id'] is defined
+
+    - name: Assigner VM1 au groupe k3s-server
+      ansible.builtin.command: >
+        /var/ossec/bin/agent_groups -a -i {{ hostvars['vm1']['agent_id'] }} -g k3s-server -q
+      delegate_to: vm4
+      when:
+        - hostvars['vm1']['agent_id'] is defined
+        - vm1_groups.stdout is not search('\\bk3s-server\\b')

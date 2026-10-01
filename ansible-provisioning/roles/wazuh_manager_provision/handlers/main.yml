@@ -1,0 +1,9 @@
+- name: Redemarrer Wazuh Indexer
+  ansible.builtin.systemd:
+    name: wazuh-indexer
+    state: restarted
+
+- name: Redemarrer Wazuh Manager
+  ansible.builtin.systemd:
+    name: wazuh-manager
+    state: restarted

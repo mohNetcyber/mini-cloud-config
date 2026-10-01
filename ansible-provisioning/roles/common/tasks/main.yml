@@ -1,0 +1,15 @@
+- name: Mettre a jour le cache apt
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Installer les paquets de base
+  ansible.builtin.apt:
+    name: [chrony, curl, ufw]
+    state: present
+
+- name: Activer la synchronisation NTP
+  ansible.builtin.systemd:
+    name: chrony
+    enabled: yes
+    state: started

@@ -1,0 +1,87 @@
+- name: Regler vm.max_map_count pour l'Indexer
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: '262144'
+    sysctl_file: /etc/sysctl.d/99-wazuh.conf
+    state: present
+
+- name: Ouvrir les ports necessaires
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    src: 192.168.100.0/24
+  loop: ['1514', '1515', '55000']
+
+- name: Autoriser le dashboard (443) depuis tout le sous-reseau
+  community.general.ufw:
+    rule: allow
+    port: '443'
+    proto: tcp
+
+- name: Telecharger le script d'installation Wazuh
+  ansible.builtin.get_url:
+    url: https://packages.wazuh.com/4.14/wazuh-install.sh
+    dest: /tmp/wazuh-install.sh
+    mode: '0755'
+
+- name: Installer Wazuh en mode all-in-one
+  ansible.builtin.command: bash /tmp/wazuh-install.sh -a
+  args:
+    chdir: /root
+    creates: /var/ossec/bin/wazuh-control
+  register: wazuh_install_result
+
+- name: Configurer le heap initial de l'Indexer
+  ansible.builtin.lineinfile:
+    path: /etc/wazuh-indexer/jvm.options
+    regexp: '^-Xms.*'
+    line: '-Xms2g'
+  notify: Redemarrer Wazuh Indexer
+
+- name: Configurer le heap maximal de l'Indexer
+  ansible.builtin.lineinfile:
+    path: /etc/wazuh-indexer/jvm.options
+    regexp: '^-Xmx.*'
+    line: '-Xmx2g'
+  notify: Redemarrer Wazuh Indexer
+  
+- name: Verifier si l'archive des mots de passe existe encore
+  ansible.builtin.stat:
+    path: /tmp/wazuh-install-files.tar
+  register: passwords_archive
+
+- name: Extraire le mot de passe admin genere
+  ansible.builtin.shell: >
+    tar -O -xvf /tmp/wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt
+    | grep -A1 "'admin'" | tail -1 | awk '{print $2}'
+  register: wazuh_admin_password
+  when: passwords_archive.stat.exists
+  no_log: true
+  changed_when: false
+
+- name: Rappel discret (mot de passe non affiche par securite)
+  ansible.builtin.debug:
+    msg: "Mot de passe admin genere - consulter l'archive sur VM4 directement, non journalise ici"
+  when: passwords_archive.stat.exists
+
+- name: Lister les groupes Wazuh existants
+  ansible.builtin.command:
+    argv:
+      - /var/ossec/bin/agent_groups
+      - -l
+  delegate_to: vm4
+  register: wazuh_existing_groups
+  changed_when: false
+
+- name: Créer le groupe k3s-server s'il est absent
+  ansible.builtin.command:
+    argv:
+      - /var/ossec/bin/agent_groups
+      - -a
+      - -g
+      - k3s-server
+      - -q
+  delegate_to: vm4
+  when: wazuh_existing_groups.stdout is not search('\\bk3s-server\\b')
+  changed_when: true

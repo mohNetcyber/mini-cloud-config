@@ -1,0 +1,44 @@
+- name: Telecharger le paquet agent Wazuh
+  ansible.builtin.get_url:
+    url: "https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_{{ wazuh_version }}-1_amd64.deb"
+    dest: /tmp/wazuh-agent.deb
+    mode: '0644'
+  vars:
+    wazuh_version: "4.14.8"
+
+- name: Installer l'agent avec l'IP du manager
+  ansible.builtin.apt:
+    deb: /tmp/wazuh-agent.deb
+  environment:
+    WAZUH_MANAGER: "{{ hostvars['vm4']['ansible_host'] }}"
+    WAZUH_AGENT_NAME: "{{ inventory_hostname }}"
+
+- name: Recharger systemd et demarrer l'agent
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: wazuh-agent
+    enabled: yes
+    state: started
+
+- name: Attendre que l'agent s'enregistre auprès du manager
+  ansible.builtin.shell: >
+    /var/ossec/bin/agent_control -l 2>/dev/null | grep -q "{{ inventory_hostname }}"
+  delegate_to: vm4
+  become: yes
+  register: agent_check
+  until: agent_check.rc == 0
+  retries: 10
+  delay: 3
+  changed_when: false
+
+- name: Recuperer l'ID de cet agent aupres du manager
+  ansible.builtin.shell: >
+    /var/ossec/bin/agent_control -l 2>/dev/null | grep "{{ inventory_hostname }}" | awk -F"," '{print $1}' | awk -F" " '{print $2}'
+  delegate_to: vm4
+  become: yes
+  register: agent_id_result
+  changed_when: false
+
+- name: Exposer l'ID comme fait partage
+  ansible.builtin.set_fact:
+    agent_id: "{{ agent_id_result.stdout | trim }}"
