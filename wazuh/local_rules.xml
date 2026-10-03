@@ -51,12 +51,36 @@
   <rule id="100102" level="12">
     <if_sid>100101</if_sid>
     <field name="objectRef.resource">secrets</field>
-    <field name="verb" type="pcre2">^(create|update|delete)$</field>
-    <description>Modification d'un Secret Kubernetes via l'API</description>
+    <field name="verb" type="pcre2">^create$</field>
+    <description>Creation d'un Secret Kubernetes via l'API</description>
     <group>k3s_audit,</group>
   </rule>
 
-  <rule id="100103" level="10">
+  <rule id="100103" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">secrets</field>
+    <field name="verb" type="pcre2">^update$</field>
+    <description>Mise a jour d'un Secret Kubernetes via l'API</description>
+    <group>k3s_audit,</group>
+  </rule>
+
+  <rule id="100104" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">secrets</field>
+    <field name="verb" type="pcre2">^patch$</field>
+    <description>Modification partielle d'un Secret Kubernetes via l'API</description>
+    <group>k3s_audit,</group>
+  </rule>
+
+  <rule id="100105" level="13">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">secrets</field>
+    <field name="verb" type="pcre2">^delete$</field>
+    <description>Suppression d'un Secret Kubernetes via l'API</description>
+    <group>k3s_audit,</group>
+  </rule>
+
+  <rule id="100106" level="10">
     <if_sid>100101</if_sid>
     <field name="objectRef.resource">pods</field>
     <field name="objectRef.subresource">exec</field>
@@ -64,59 +88,227 @@
     <group>k3s_audit,</group>
   </rule>
 
-  <rule id="100104" level="12">
-    <if_sid>100101</if_sid>
-    <field name="objectRef.resource">rolebindings</field>
-    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
-    <description>Modification d'un RoleBinding Kubernetes via l'API</description>
-    <group>k3s_audit,rbac_change,</group>
-  </rule>
-
-  <rule id="100105" level="13">
-    <if_sid>100101</if_sid>
-    <field name="objectRef.resource">clusterrolebindings</field>
-    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
-    <description>Modification critique d'un ClusterRoleBinding Kubernetes via l'API</description>
-    <group>k3s_audit,rbac_change,</group>
-  </rule>
-
-  <rule id="100106" level="11">
-    <if_sid>100101</if_sid>
-    <field name="objectRef.resource">roles</field>
-    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
-    <description>Modification d'un Role Kubernetes via l'API</description>
-    <group>k3s_audit,rbac_change,</group>
-  </rule>
-
   <rule id="100107" level="12">
     <if_sid>100101</if_sid>
-    <field name="objectRef.resource">clusterroles</field>
-    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
-    <description>Modification d'un ClusterRole Kubernetes via l'API</description>
+    <field name="objectRef.resource">rolebindings</field>
+    <field name="verb" type="pcre2">^create$</field>
+    <description>Creation d'un RoleBinding Kubernetes via l'API</description>
     <group>k3s_audit,rbac_change,</group>
   </rule>
 
-  <rule id="100108" level="10">
+  <rule id="100108" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">rolebindings</field>
+    <field name="verb" type="pcre2">^update$</field>
+    <description>Mise a jour d'un RoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100109" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">rolebindings</field>
+    <field name="verb" type="pcre2">^patch$</field>
+    <description>Modification partielle d'un RoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100110" level="13">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">rolebindings</field>
+    <field name="verb" type="pcre2">^delete$</field>
+    <description>Suppression d'un RoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100111" level="13">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterrolebindings</field>
+    <field name="verb" type="pcre2">^create$</field>
+    <description>Creation critique d'un ClusterRoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100112" level="13">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterrolebindings</field>
+    <field name="verb" type="pcre2">^update$</field>
+    <description>Mise a jour critique d'un ClusterRoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100113" level="13">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterrolebindings</field>
+    <field name="verb" type="pcre2">^patch$</field>
+    <description>Modification partielle critique d'un ClusterRoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100114" level="14">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterrolebindings</field>
+    <field name="verb" type="pcre2">^delete$</field>
+    <description>Suppression critique d'un ClusterRoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100115" level="11">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">roles</field>
+    <field name="verb" type="pcre2">^create$</field>
+    <description>Creation d'un Role Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100116" level="11">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">roles</field>
+    <field name="verb" type="pcre2">^update$</field>
+    <description>Mise a jour d'un Role Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100117" level="11">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">roles</field>
+    <field name="verb" type="pcre2">^patch$</field>
+    <description>Modification partielle d'un Role Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100118" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">roles</field>
+    <field name="verb" type="pcre2">^delete$</field>
+    <description>Suppression d'un Role Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100119" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterroles</field>
+    <field name="verb" type="pcre2">^create$</field>
+    <description>Creation d'un ClusterRole Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100120" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterroles</field>
+    <field name="verb" type="pcre2">^update$</field>
+    <description>Mise a jour d'un ClusterRole Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100121" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterroles</field>
+    <field name="verb" type="pcre2">^patch$</field>
+    <description>Modification partielle d'un ClusterRole Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100122" level="13">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterroles</field>
+    <field name="verb" type="pcre2">^delete$</field>
+    <description>Suppression d'un ClusterRole Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100123" level="10">
     <if_sid>100101</if_sid>
     <field name="objectRef.resource">namespaces</field>
-    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
-    <description>Modification d'un Namespace Kubernetes via l'API</description>
+    <field name="verb" type="pcre2">^create$</field>
+    <description>Creation d'un Namespace Kubernetes via l'API</description>
     <group>k3s_audit,cluster_change,</group>
   </rule>
 
-  <rule id="100109" level="9">
+  <rule id="100124" level="10">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">namespaces</field>
+    <field name="verb" type="pcre2">^update$</field>
+    <description>Mise a jour d'un Namespace Kubernetes via l'API</description>
+    <group>k3s_audit,cluster_change,</group>
+  </rule>
+
+  <rule id="100125" level="10">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">namespaces</field>
+    <field name="verb" type="pcre2">^patch$</field>
+    <description>Modification partielle d'un Namespace Kubernetes via l'API</description>
+    <group>k3s_audit,cluster_change,</group>
+  </rule>
+
+  <rule id="100126" level="11">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">namespaces</field>
+    <field name="verb" type="pcre2">^delete$</field>
+    <description>Suppression d'un Namespace Kubernetes via l'API</description>
+    <group>k3s_audit,cluster_change,</group>
+  </rule>
+
+  <rule id="100127" level="9">
     <if_sid>100101</if_sid>
     <field name="objectRef.resource">pods</field>
-    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
-    <description>Modification d'un Pod Kubernetes via l'API</description>
+    <field name="verb" type="pcre2">^create$</field>
+    <description>Creation d'un Pod Kubernetes via l'API</description>
     <group>k3s_audit,workload_change,</group>
   </rule>
 
-  <rule id="100110" level="10">
+  <rule id="100128" level="9">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">pods</field>
+    <field name="verb" type="pcre2">^update$</field>
+    <description>Mise a jour d'un Pod Kubernetes via l'API</description>
+    <group>k3s_audit,workload_change,</group>
+  </rule>
+
+  <rule id="100129" level="9">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">pods</field>
+    <field name="verb" type="pcre2">^patch$</field>
+    <description>Modification partielle d'un Pod Kubernetes via l'API</description>
+    <group>k3s_audit,workload_change,</group>
+  </rule>
+
+  <rule id="100130" level="10">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">pods</field>
+    <field name="verb" type="pcre2">^delete$</field>
+    <description>Suppression d'un Pod Kubernetes via l'API</description>
+    <group>k3s_audit,workload_change,</group>
+  </rule>
+
+  <rule id="100131" level="10">
     <if_sid>100101</if_sid>
     <field name="objectRef.resource">serviceaccounts</field>
-    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
-    <description>Modification d'un ServiceAccount Kubernetes via l'API</description>
+    <field name="verb" type="pcre2">^create$</field>
+    <description>Creation d'un ServiceAccount Kubernetes via l'API</description>
+    <group>k3s_audit,identity_change,</group>
+  </rule>
+
+  <rule id="100132" level="10">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">serviceaccounts</field>
+    <field name="verb" type="pcre2">^update$</field>
+    <description>Mise a jour d'un ServiceAccount Kubernetes via l'API</description>
+    <group>k3s_audit,identity_change,</group>
+  </rule>
+
+  <rule id="100133" level="10">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">serviceaccounts</field>
+    <field name="verb" type="pcre2">^patch$</field>
+    <description>Modification partielle d'un ServiceAccount Kubernetes via l'API</description>
+    <group>k3s_audit,identity_change,</group>
+  </rule>
+
+  <rule id="100134" level="11">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">serviceaccounts</field>
+    <field name="verb" type="pcre2">^delete$</field>
+    <description>Suppression d'un ServiceAccount Kubernetes via l'API</description>
     <group>k3s_audit,identity_change,</group>
   </rule>
 </group>
