@@ -63,4 +63,60 @@
     <description>Execution de commandes dans un pod via l'API Kubernetes</description>
     <group>k3s_audit,</group>
   </rule>
+
+  <rule id="100104" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">rolebindings</field>
+    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
+    <description>Modification d'un RoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100105" level="13">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterrolebindings</field>
+    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
+    <description>Modification critique d'un ClusterRoleBinding Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100106" level="11">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">roles</field>
+    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
+    <description>Modification d'un Role Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100107" level="12">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">clusterroles</field>
+    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
+    <description>Modification d'un ClusterRole Kubernetes via l'API</description>
+    <group>k3s_audit,rbac_change,</group>
+  </rule>
+
+  <rule id="100108" level="10">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">namespaces</field>
+    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
+    <description>Modification d'un Namespace Kubernetes via l'API</description>
+    <group>k3s_audit,cluster_change,</group>
+  </rule>
+
+  <rule id="100109" level="9">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">pods</field>
+    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
+    <description>Modification d'un Pod Kubernetes via l'API</description>
+    <group>k3s_audit,workload_change,</group>
+  </rule>
+
+  <rule id="100110" level="10">
+    <if_sid>100101</if_sid>
+    <field name="objectRef.resource">serviceaccounts</field>
+    <field name="verb" type="pcre2">^(create|update|patch|delete)$</field>
+    <description>Modification d'un ServiceAccount Kubernetes via l'API</description>
+    <group>k3s_audit,identity_change,</group>
+  </rule>
 </group>
