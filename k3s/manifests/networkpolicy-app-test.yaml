@@ -7,11 +7,26 @@ spec:
   podSelector:
     matchLabels:
       app: app-test
-  policyTypes: ["Ingress"]
+
+  policyTypes:
+    - Ingress
+
   ingress:
     - from:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: traefik
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: traefik
       ports:
-        - port: 5000     
+        - protocol: TCP
+          port: 5000
+
+    # Prometheus VM3
+    - from:
+        - ipBlock:
+            cidr: 192.168.100.12/32
+      ports:
+        - protocol: TCP
+          port: 5000
