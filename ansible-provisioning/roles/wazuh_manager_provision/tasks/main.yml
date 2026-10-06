@@ -1,3 +1,0 @@
----
-- name: Installation de Wazuh All-in-One 
-  ansible.builtin.include_tasks: installation-wazuh-all-in-one.yml

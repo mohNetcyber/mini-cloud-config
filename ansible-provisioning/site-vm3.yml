@@ -1,6 +1,0 @@
-- hosts: monitoring
-  become: yes
-  roles:
-    - common
-    - prometheus_provision
-    - grafana_provision
