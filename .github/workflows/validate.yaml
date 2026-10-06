@@ -30,7 +30,16 @@ jobs:
             prometheus_archive="prometheus-${prometheus_version}.linux-amd64.tar.gz"
             curl -fsSL "https://github.com/prometheus/prometheus/releases/download/${prometheus_tag}/${prometheus_archive}" -o "$prometheus_archive"
             tar xzf "$prometheus_archive"
-            "./prometheus-${prometheus_version}.linux-amd64/promtool" check config prometheus/prometheus.yml
+
+            validation_dir="$(mktemp -d)"
+            trap 'rm -rf "$validation_dir"' EXIT
+            cp prometheus/prometheus.yml prometheus/alert.rules.yml "$validation_dir/"
+            printf 'ci-validation-token\n' > "$validation_dir/k3s-bearer-token"
+            sed -i \
+              -e "s#/etc/prometheus/k3s-bearer-token#$validation_dir/k3s-bearer-token#g" \
+              -e 's#/etc/prometheus/k3s-ca.crt#/etc/ssl/certs/ca-certificates.crt#g' \
+              "$validation_dir/prometheus.yml"
+            "./prometheus-${prometheus_version}.linux-amd64/promtool" check config "$validation_dir/prometheus.yml"
           else
             echo "prometheus.yml absent, etape ignoree (VM3 pas encore installee)"
           fi
