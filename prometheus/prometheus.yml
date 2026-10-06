@@ -1,0 +1,82 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert.rules.yml"
+
+scrape_configs:
+
+  # Auto-surveillance de Prometheus lui-meme
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Metriques host (CPU/RAM/disque des VM)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+          - '192.168.100.10:9100'
+          - '192.168.100.11:9100'
+        labels:
+          cluster: 'mini-cloud-k3s'
+
+  # Etat des objets Kubernetes (pods, deployments...)
+  - job_name: 'kube-state-metrics'
+    static_configs:
+      - targets: ['192.168.100.11:30081']
+
+  # Metriques par conteneur/pod via cAdvisor (proxy API K3s)
+  - job_name: 'kubernetes-cadvisor'
+    scheme: https
+    kubernetes_sd_configs:
+      - role: node
+        api_server: https://192.168.100.10:6443
+        bearer_token_file: /etc/prometheus/k3s-bearer-token
+        tls_config:
+          ca_file: /etc/prometheus/k3s-ca.crt
+    bearer_token_file: /etc/prometheus/k3s-bearer-token
+    tls_config:
+      ca_file: /etc/prometheus/k3s-ca.crt
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: 192.168.100.10:6443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+  # Metriques host niveau kubelet (complementaire, healthz/metrics standard)
+  - job_name: 'kubernetes-nodes'
+    scheme: https
+    kubernetes_sd_configs:
+      - role: node
+        api_server: https://192.168.100.10:6443
+        bearer_token_file: /etc/prometheus/k3s-bearer-token
+        tls_config:
+          ca_file: /etc/prometheus/k3s-ca.crt
+    bearer_token_file: /etc/prometheus/k3s-bearer-token
+    tls_config:
+      ca_file: /etc/prometheus/k3s-ca.crt
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: 192.168.100.10:6443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  # Metriques HTTP niveau proxy (Traefik) - couvre TOUTE application derriere
+  # une IngressRoute/HTTPRoute, quel que soit son niveau d'instrumentation
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['192.168.100.11:30090']
+
+  # Application de test Flask (metriques metier, niveau applicatif)
+  - job_name: 'app-test'
+    static_configs:
+      - targets: ['192.168.100.11:30080']
