@@ -72,8 +72,10 @@ jobs:
       - name: Déplacer les fichiers avec les bons droits
         run: |
           ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "
-            sudo install -o prometheus -g prometheus -m 0644 /tmp/prometheus-deploy/prometheus.yml /etc/prometheus/prometheus.yml &&
-            sudo install -o prometheus -g prometheus -m 0644 /tmp/prometheus-deploy/alert.rules.yml /etc/prometheus/alert.rules.yml &&
+            sudo cp /tmp/prometheus-deploy/prometheus.yml /etc/prometheus/prometheus.yml &&
+            sudo cp /tmp/prometheus-deploy/alert.rules.yml /etc/prometheus/alert.rules.yml &&
+            sudo chown prometheus:prometheus /etc/prometheus/prometheus.yml /etc/prometheus/alert.rules.yml &&
+            sudo chmod 0644 /etc/prometheus/prometheus.yml /etc/prometheus/alert.rules.yml &&
             rm -rf /tmp/prometheus-deploy
           "
       - name: Recharger Prometheus à chaud
