@@ -25,8 +25,12 @@ jobs:
       - name: Valider prometheus.yml (si présent)
         run: |
           if [ -f prometheus/prometheus.yml ]; then
-            curl -sSL https://github.com/prometheus/prometheus/releases/latest/download/prometheus-linux-amd64.tar.gz | tar xz
-            ./prometheus-linux-amd64/promtool check config prometheus/prometheus.yml
+            prometheus_tag="$(curl -fsSL https://api.github.com/repos/prometheus/prometheus/releases/latest | jq -r '.tag_name')"
+            prometheus_version="${prometheus_tag#v}"
+            prometheus_archive="prometheus-${prometheus_version}.linux-amd64.tar.gz"
+            curl -fsSL "https://github.com/prometheus/prometheus/releases/download/${prometheus_tag}/${prometheus_archive}" -o "$prometheus_archive"
+            tar xzf "$prometheus_archive"
+            "./prometheus-${prometheus_version}.linux-amd64/promtool" check config prometheus/prometheus.yml
           else
             echo "prometheus.yml absent, etape ignoree (VM3 pas encore installee)"
           fi
