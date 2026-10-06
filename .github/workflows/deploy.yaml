@@ -64,10 +64,18 @@ jobs:
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 192.168.100.12 >> ~/.ssh/known_hosts
-      - name: Copier la config vers VM3
+      - name: Copier la config vers un dossier temporaire sur VM3
         run: |
-          scp -i ~/.ssh/deploy_key prometheus/prometheus.yml traore-karym@192.168.100.12:/etc/prometheus/prometheus.yml
-          scp -i ~/.ssh/deploy_key prometheus/alert.rules.yml traore-karym@192.168.100.12:/etc/prometheus/alert.rules.yml
+          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "mkdir -p /tmp/prometheus-deploy"
+          scp -i ~/.ssh/deploy_key prometheus/prometheus.yml traore-karym@192.168.100.12:/tmp/prometheus-deploy/prometheus.yml
+          scp -i ~/.ssh/deploy_key prometheus/alert.rules.yml traore-karym@192.168.100.12:/tmp/prometheus-deploy/alert.rules.yml
+      - name: Déplacer les fichiers avec les bons droits
+        run: |
+          ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "
+            sudo install -o prometheus -g prometheus -m 0644 /tmp/prometheus-deploy/prometheus.yml /etc/prometheus/prometheus.yml &&
+            sudo install -o prometheus -g prometheus -m 0644 /tmp/prometheus-deploy/alert.rules.yml /etc/prometheus/alert.rules.yml &&
+            rm -rf /tmp/prometheus-deploy
+          "
       - name: Recharger Prometheus à chaud
         run: |
           ssh -i ~/.ssh/deploy_key traore-karym@192.168.100.12 "curl -X POST http://localhost:9090/-/reload"
