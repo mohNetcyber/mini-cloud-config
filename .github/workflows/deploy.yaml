@@ -75,7 +75,6 @@ jobs:
             sudo cp /tmp/prometheus-deploy/prometheus.yml /etc/prometheus/prometheus.yml &&
             sudo cp /tmp/prometheus-deploy/alert.rules.yml /etc/prometheus/alert.rules.yml &&
             sudo chown prometheus:prometheus /etc/prometheus/prometheus.yml /etc/prometheus/alert.rules.yml &&
-            sudo chmod 0644 /etc/prometheus/prometheus.yml /etc/prometheus/alert.rules.yml &&
             rm -rf /tmp/prometheus-deploy
           "
       - name: Recharger Prometheus à chaud
