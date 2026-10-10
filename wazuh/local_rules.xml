@@ -17,11 +17,11 @@
   <rule id="100002" level="12" frequency="6" timeframe="120">
     <if_matched_sid>100001</if_matched_sid>
     <same_source_ip />
-    <description>Bruteforce SSH probable - plus de 6 echecs en 2 minutes</description>
+    <description>Bruteforce SSH probable - 6 echecs en 2 minutes provenant du même IP</description>
     <group>authentication_failures,</group>
   </rule>
 
-  <!-- Alertes FIM : modifications fichiers sensibles (Celles-ci sont correctes) -->
+  <!-- Alertes FIM : modifications fichiers sensibles-->
   <rule id="100020" level="12">
     <if_sid>550</if_sid>
     <field name="file">/etc/ssh/sshd_config</field>
