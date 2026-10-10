@@ -3,7 +3,6 @@
 <!-- Modify it at your will. -->
 <!-- Copyright (C) 2015, Wazuh Inc. -->
 
-
 <group name="local,syslog,sshd,">
 
   <!-- Règle 100001 : Se déclenche à CHAQUE échec SSH (remplacement de if_matched_sid par if_sid) -->
