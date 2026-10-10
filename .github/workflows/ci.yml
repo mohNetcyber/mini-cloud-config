@@ -18,7 +18,7 @@ jobs:
       image_name: ${{ steps.image-name.outputs.image_name }}
     steps:
       - name: Checkout du code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Normaliser le nom de l'image GHCR
         id: image-name
@@ -68,7 +68,7 @@ jobs:
     needs: build-scan-push
     steps:
       - name: Checkout du code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Creer ou mettre a jour le secret de pull GHCR
         run: |

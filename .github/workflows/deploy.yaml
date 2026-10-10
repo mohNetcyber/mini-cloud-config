@@ -13,7 +13,7 @@ jobs:
       grafana: ${{ steps.filter.outputs.grafana }}
       wazuh: ${{ steps.filter.outputs.wazuh }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Detecter les fichiers modifies
@@ -46,7 +46,7 @@ jobs:
     needs: [changes, validate]
     if: needs.changes.outputs.k3s == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Creer/mettre a jour le secret de pull GHCR
         run: |
@@ -67,7 +67,7 @@ jobs:
     needs: [changes, validate]
     if: needs.changes.outputs.prometheus == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Charger la clé SSH
         run: |
           mkdir -p ~/.ssh
@@ -99,7 +99,7 @@ jobs:
     needs: [changes, validate]
     if: needs.changes.outputs.grafana == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Charger la clé SSH
         run: |
           mkdir -p ~/.ssh
@@ -132,7 +132,7 @@ jobs:
     needs: [changes, validate]
     if: needs.changes.outputs.wazuh == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       
       - name: Charger la clé SSH
         run: |
