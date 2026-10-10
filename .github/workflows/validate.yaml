@@ -1,6 +1,7 @@
 name: Validate Config Files
 
 on:
+  workflow_call:
   push:
     branches: [main]
     paths:

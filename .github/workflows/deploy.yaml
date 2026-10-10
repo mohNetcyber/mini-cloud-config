@@ -29,11 +29,21 @@ jobs:
               - 'grafana/**'
             wazuh:
               - 'wazuh/**'
+
+  validate:
+    needs: changes
+    if: |
+      needs.changes.outputs.k3s == 'true' ||
+      needs.changes.outputs.prometheus == 'true' ||
+      needs.changes.outputs.grafana == 'true' ||
+      needs.changes.outputs.wazuh == 'true'
+    uses: ./.github/workflows/validate.yaml
+
   deploy-k3s:
     runs-on: self-hosted
     env:
       KUBECONFIG: /home/traore-karym/actions-runner/deployer-kubeconfig.yaml
-    needs: changes
+    needs: [changes, validate]
     if: needs.changes.outputs.k3s == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +64,7 @@ jobs:
 
   deploy-prometheus:
     runs-on: self-hosted
-    needs: changes
+    needs: [changes, validate]
     if: needs.changes.outputs.prometheus == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -86,7 +96,7 @@ jobs:
 
   deploy-grafana:
     runs-on: self-hosted
-    needs: changes
+    needs: [changes, validate]
     if: needs.changes.outputs.grafana == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -119,7 +129,7 @@ jobs:
 
   deploy-wazuh:
     runs-on: self-hosted
-    needs: changes
+    needs: [changes, validate]
     if: needs.changes.outputs.wazuh == 'true'
     steps:
       - uses: actions/checkout@v4
