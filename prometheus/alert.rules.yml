@@ -32,4 +32,5 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Consommation memoire elevee sur le pod {{ $labels.pod }}"         
+          summary: "Consommation memoire elevee sur le pod {{ $labels.pod }}"
+                   

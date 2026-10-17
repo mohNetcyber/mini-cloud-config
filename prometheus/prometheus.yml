@@ -79,4 +79,5 @@ scrape_configs:
   # Application de test Flask (metriques metier, niveau applicatif)
   - job_name: 'app-test'
     static_configs:
-      - targets: ['192.168.100.11:30080']      
+      - targets: ['192.168.100.11:30080'] 
+           
