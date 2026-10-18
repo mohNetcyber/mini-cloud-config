@@ -309,5 +309,4 @@
     <description>Suppression d'un ServiceAccount Kubernetes via l'API</description>
     <group>k3s_audit,identity_change,</group>
   </rule>
-  
 </group>
