@@ -145,7 +145,7 @@ jobs:
             sudo cp /tmp/ossec.conf /var/ossec/etc/ossec.conf &&
             sudo cp /tmp/agent.conf /var/ossec/etc/shared/default/agent.conf &&
             sudo cp /tmp/local_rules.xml /var/ossec/etc/rules/local_rules.xml &&
-            sudo rm -f /tmp/agent.conf /tmp/local_rules.xml &&
+            rm -f /tmp/ossec.conf /tmp/agent.conf /tmp/local_rules.xml &&
             sudo systemctl restart wazuh-manager
           "
       - name: Nettoyer la clé SSH
